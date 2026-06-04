@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [modo, setModo] = useState<"entrar" | "criar">("entrar");
   const [nome, setNome] = useState("");
@@ -21,6 +20,11 @@ export default function LoginPage() {
     setErro(null);
     setMensagem(null);
     setCarregando(true);
+
+    // O client é criado aqui (no browser, no clique) e não na renderização,
+    // para que a página /login possa ser prerenderizada no build sem depender
+    // das variáveis NEXT_PUBLIC_SUPABASE_* estarem presentes naquele momento.
+    const supabase = createClient();
 
     if (modo === "entrar") {
       const { error } = await supabase.auth.signInWithPassword({

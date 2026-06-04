@@ -55,6 +55,12 @@ export default async function OrdemDetalhePage({
     .eq("ordem_servico_id", id)
     .order("data_entrega", { ascending: false });
 
+  const { data: materiais } = await supabase
+    .from("materiais_os")
+    .select("*")
+    .eq("ordem_servico_id", id)
+    .order("criado_em", { ascending: true });
+
   const rc = rcs?.[0] ?? null;
   const pedido = rc?.pedidos_compra?.[0] ?? null;
   const followups = pedido?.followups ?? [];
@@ -110,6 +116,29 @@ export default async function OrdemDetalhePage({
           <AcoesStatusOS ordemId={ordem.id} transicoes={TRANSICOES_OS[ordem.status]} />
         </div>
       </div>
+
+      {/* Materiais necessários */}
+      <Secao titulo="Materiais necessários">
+        {materiais && materiais.length > 0 ? (
+          <ul className="divide-y divide-slate-100 rounded-lg bg-slate-50 text-sm">
+            {materiais.map((m) => (
+              <li key={m.id} className="flex justify-between px-3 py-2">
+                <span>
+                  {m.descricao}
+                  {m.codigo_sap ? ` (${m.codigo_sap})` : ""}
+                </span>
+                <span className="text-slate-500">
+                  {m.quantidade} {m.unidade}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400">
+            Nenhum material informado para este serviço.
+          </p>
+        )}
+      </Secao>
 
       {/* Requisição de Compra */}
       <Secao titulo="1. Requisição de Compra (RC)">

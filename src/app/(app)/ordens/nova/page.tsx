@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { criarOrdem } from "@/app/actions/ordens";
+import { MateriaisOSInput } from "@/components/MateriaisOSInput";
 
 export default function NovaOrdemPage() {
   return (
@@ -71,6 +72,10 @@ export default function NovaOrdemPage() {
             Se &quot;Não&quot;, a O.S. já entra como &quot;Aguardando compra&quot;.
           </span>
         </label>
+
+        <div className="border-t border-slate-100 pt-4">
+          <MateriaisOSInput />
+        </div>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link

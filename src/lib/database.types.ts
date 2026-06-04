@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -148,6 +150,44 @@ export type Database = {
             columns: ["pedido_id"]
             isOneToOne: false
             referencedRelation: "pedidos_compra"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materiais_os: {
+        Row: {
+          codigo_sap: string | null
+          criado_em: string
+          descricao: string
+          id: string
+          ordem_servico_id: string
+          quantidade: number
+          unidade: string
+        }
+        Insert: {
+          codigo_sap?: string | null
+          criado_em?: string
+          descricao: string
+          id?: string
+          ordem_servico_id: string
+          quantidade?: number
+          unidade?: string
+        }
+        Update: {
+          codigo_sap?: string | null
+          criado_em?: string
+          descricao?: string
+          id?: string
+          ordem_servico_id?: string
+          quantidade?: number
+          unidade?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiais_os_ordem_servico_id_fkey"
+            columns: ["ordem_servico_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
           },
         ]
@@ -359,7 +399,11 @@ export type Database = {
     Enums: {
       papel_usuario: "admin" | "manutencao" | "compras" | "almoxarifado"
       prioridade_os: "baixa" | "media" | "alta"
-      situacao_followup: "aguardando" | "em_transporte" | "atrasado" | "entregue"
+      situacao_followup:
+        | "aguardando"
+        | "em_transporte"
+        | "atrasado"
+        | "entregue"
       status_item: "pendente" | "recebido"
       status_os:
         | "aberta"
@@ -489,3 +533,60 @@ export type Enums<
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      papel_usuario: ["admin", "manutencao", "compras", "almoxarifado"],
+      prioridade_os: ["baixa", "media", "alta"],
+      situacao_followup: [
+        "aguardando",
+        "em_transporte",
+        "atrasado",
+        "entregue",
+      ],
+      status_item: ["pendente", "recebido"],
+      status_os: [
+        "aberta",
+        "verificando_estoque",
+        "disponivel_estoque",
+        "aguardando_compra",
+        "em_aprovacao",
+        "em_cotacao",
+        "pedido_gerado",
+        "aguardando_entrega",
+        "material_recebido",
+        "liberada_para_manutencao",
+        "programada",
+        "material_entregue",
+        "concluida",
+        "cancelada",
+      ],
+      status_pedido: [
+        "gerado",
+        "aprovado",
+        "recebido_parcial",
+        "recebido",
+        "cancelado",
+      ],
+      status_rc: ["em_aprovacao", "aprovada", "reprovada", "em_cotacao"],
+    },
+  },
+} as const

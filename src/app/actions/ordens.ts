@@ -36,6 +36,39 @@ export async function criarOrdem(formData: FormData) {
     throw new Error("Erro ao criar O.S.: " + error.message);
   }
 
+  // Materiais necessários (campos paralelos: material_descricao[], material_quantidade[], ...)
+  const descricoes = formData
+    .getAll("material_descricao")
+    .map((v) => v.toString());
+  const codigos = formData
+    .getAll("material_codigo_sap")
+    .map((v) => v.toString());
+  const quantidades = formData
+    .getAll("material_quantidade")
+    .map((v) => v.toString());
+  const unidades = formData
+    .getAll("material_unidade")
+    .map((v) => v.toString());
+
+  const materiais = descricoes
+    .map((descricao, i) => ({
+      ordem_servico_id: data.id,
+      descricao: descricao.trim(),
+      codigo_sap: codigos[i]?.trim() || null,
+      quantidade: quantidades[i] ? Number(quantidades[i]) : 1,
+      unidade: unidades[i]?.trim() || "UN",
+    }))
+    .filter((m) => m.descricao.length > 0);
+
+  if (materiais.length > 0) {
+    const { error: errMat } = await supabase
+      .from("materiais_os")
+      .insert(materiais);
+    if (errMat) {
+      throw new Error("Erro ao salvar materiais da O.S.: " + errMat.message);
+    }
+  }
+
   revalidatePath("/ordens");
   redirect(`/ordens/${data.id}`);
 }
